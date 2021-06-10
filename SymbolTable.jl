@@ -78,8 +78,8 @@ end
 function insertAfterComma(line, dictionary,CountDict, type, kind)
     tokensToComma = getTillComma(line)
     if extractToken(line[2]) == ";"
-        lines = eatTokens(line, tokensToComma)
-        return dictionary, CountDict, lines
+      #  lines = eatTokens(line, tokensToComma)
+        return dictionary, CountDict
     end
     lines = eatTokens(line, tokensToComma)
     name = extractToken(lines[1])
@@ -115,12 +115,14 @@ function classVarSymbolTable(lines, dictionary, CountDict)
     type = extractToken(line[2])
     name = extractToken(line[3]) 
     count = CountDict[kind]
-    push!(dictionary, name => [type, segDic[kind], "$count"])
+    dictionary[name] = [type, segDic[kind], "$count"]
+   # push!(dictionary, name => [type, segDic[kind], "$count"])
     CountDict[kind] += 1
     if extractToken(line[4]) == ";" # it means that we have only 1 var 
         lines =  eatTokens(classLines, line)
     else # it means that we had  more than 1 var
-        dictionary, CountDict, lines = insertAfterComma(classLines, dictionary, CountDict, type, kind)
+        dictionary, CountDict = insertAfterComma(classLines, dictionary, CountDict, type, kind)
+        lines =  eatTokens(classLines, line)
     end
     return classVarSymbolTable(lines, dictionary, CountDict)
    
@@ -160,7 +162,7 @@ end
 function findLocal(file)
     locals = []
     for line in file
-        if extractToken(line) ∉ ["let", "do"]
+        if extractToken(line) != "let" && extractToken(line) != "do"
           append!(locals, [line])
         else
             return locals
@@ -176,7 +178,8 @@ function createCountDic(keyWord1, keyWord2)
   # the main function that return the symbol table to every subtoutine scope
   function generateSubroutines(file, dictionary, className, symbolTable)
     if extractToken(file[1]) == "method"
-        push!( symbolTable, "this" => [className, "ARG", "0"])
+        symbolTable["this"] = [className, "ARG", "0"]
+       # push!( symbolTable, "this" => [methodName, "ARG", "0"])
         dictionary["argument"] += 1
       end
       args, subArgs = findArguments(file)
@@ -202,12 +205,14 @@ function createCountDic(keyWord1, keyWord2)
     type =  extractToken(file[2])
     name =  extractToken(file[3])
     count = dictionary[kind]
-    push!(symbolTable, name => [type, segDic[kind], "$count"])
+    # push!(symbolTable, name => [type, segDic[kind], "$count"])
+    symbolTable[name] = [type, segDic[kind], "$count"]
     dictionary[kind] += 1
     if extractToken(file[4]) == ";" # it means that we have only 1 var 
         lines =  eatTokens(file, lines)
     else # it means that we had  more than 1 var
-        symbolTable, dictionary, lines = insertAfterComma(lines, symbolTable, dictionary, type, kind)
+        symbolTable, dictionary = insertAfterComma(lines, symbolTable, dictionary, type, kind)
+        lines =  eatTokens(file, lines)
     
     end
     return insertLocals(lines, dictionary, symbolTable)
