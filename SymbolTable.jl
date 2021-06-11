@@ -1,5 +1,6 @@
 # dictionary to convert segments to to vm
 segDic = Dict("argument" => "ARG", "var" => "LOCAL", "static" => "STATIC","field" => "FIELD")
+noLocal = ["let", "do", "if", "while"]
 
 # function that get a line in xml and return the word in it
 function extractToken(line)
@@ -162,7 +163,7 @@ end
 function findLocal(file)
     locals = []
     for line in file
-        if extractToken(line) != "let" && extractToken(line) != "do"
+        if extractToken(line) ∉ noLocal
           append!(locals, [line])
         else
             return locals

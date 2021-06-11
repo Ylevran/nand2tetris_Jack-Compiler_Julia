@@ -12,11 +12,14 @@ SubroutineDecFirst = ["constructor", "function", "method"]
 operators = ["+", "-", "*", "/", "&", "|", "<", ">", "=", "&lt;", "&gt;", "&quot;", "&amp;"]
 unaryOperators = ["~", "-"]
 
+varName = ""
+labelIndex = 1
+
 # Global Symbol Tables
 classTable = Dict()
 subRoutineTable = Dict()
 
-varName = ""
+
 
 countClassDic = Dict()
 countSubDic = Dict()
@@ -171,47 +174,58 @@ function compileLet(lines)
 
     eatToken(lines) # =
     out *= compileExpression(lines)
+    out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
     eatToken(lines) # ;
 
     return out
 end
 
-function compileIf(lines, tabs)
-    out = "$tabs<ifStatement>\n"
-    tabsN = tabs * "  "
+function compileIf(lines)
+    out = ""
+    index = labelIndex
+    global labelIndex += 1
 
-    out *= eatToken(lines, tabsN) # if
-    out *= eatToken(lines, tabsN) # (
-    out *= compileExpression(lines, tabsN)
-    out *= eatToken(lines, tabsN) # )
-    out *= eatToken(lines, tabsN) # {
-    out *= compileStatements(lines, tabsN)
-    out *= eatToken(lines, tabsN) # }
+    eatToken(lines) # if
+    eatToken(lines) # (
+    out *= compileExpression(lines)
+    out *= writeArihtmetic("not")
+    out *= writeIf("IF_FALSE$index")
+    eatToken(lines) # )
+    eatToken(lines) # {
+    out *= compileStatements(lines)
+    out *= writeGoto("IF_TRUE$index")
+    out *= writeLabel("IF_FALSE$index")
+    eatToken(lines) # }
 
     if split(lines[1])[2] == "else"
-        out *= eatToken(lines, tabsN) # else
-        out *= eatToken(lines, tabsN) # {
-        out *= compileStatements(lines, tabsN)
-        out *= eatToken(lines, tabsN) # }
+        eatToken(lines) # else
+        eatToken(lines) # {
+        out *= compileStatements(lines)
+        eatToken(lines) # }
     end
+    out *= writeLabel("IF_TRUE$index")
 
-    out *= "$tabs</ifStatement>\n" 
     return out
 end
 
-function compileWhile(lines, tabs)
-    out = "$tabs<whileStatement>\n"
-    tabsN = tabs * "  "
+function compileWhile(lines)
+    out = ""
+    index = labelIndex    
+    global labelIndex += 1
 
-    out *= eatToken(lines, tabsN) # while
-    out *= eatToken(lines, tabsN) # (
-    out *= compileExpression(lines, tabsN)
-    out *= eatToken(lines, tabsN) # )
-    out *= eatToken(lines, tabsN) # {
-    out *= compileStatements(lines, tabsN)
-    out *= eatToken(lines, tabsN) # }
+    out *= writeLabel("WHILE_EXP$index")
+    eatToken(lines) # while
+    eatToken(lines) # (
+    out *= compileExpression(lines)
+    out *= writeArihtmetic("not")
+    out *= writeIf("WHILE_END$index")
+    eatToken(lines) # )
+    eatToken(lines) # {
+    out *= compileStatements(lines)
+    out *= writeGoto("WHILE_EXP$index")
+    out *= writeLabel("WHILE_END$index")
+    eatToken(lines) # }
 
-    out *= "$tabs</whileStatement>\n" 
     return out
 end
 
@@ -271,16 +285,28 @@ function compileExpression(lines)
         out *= compileTerm(lines)
         
         if op == "+"
-            out *= "add\n"
+            out *= writeArihtmetic("add")
         
         elseif op == "-"
-            out *= "sub\n"
+            out *= writeArihtmetic("sub")
 
         elseif op == "*"
-            out *= "call Math.multiply 2\n"
+            out *= writeCall("Math.multiply", 2)
 
         elseif op == "\\"
-            out *= "call Math.divide 2\n"
+            out *= writeCall("Math.divide", 2)
+
+        elseif op == "&gt;"
+            out *= writeArihtmetic("gt")
+
+        elseif op == "&lt;"
+            out *= writeArihtmetic("lt")
+        
+        elseif op == "&amp;"
+            out *= writeArihtmetic("and")
+
+        elseif  op == "="
+            out *= writeArihtmetic("eq")
         end
     end
 
@@ -306,7 +332,9 @@ function compileTerm(lines)
     # unaryOp term
     elseif split(lines[1])[2] in unaryOperators
         if split(lines[1])[2] == "-"
-            res = "neg\n"
+            res = writeArihtmetic("neg")
+        elseif split(lines[1])[2] == "~"
+            res = writeArihtmetic("not")
         end
         eatToken(lines) # Uop
         out *= compileTerm(lines)
@@ -330,7 +358,7 @@ function compileTerm(lines)
         res, args_num = compileExpressionList(lines, args_num)
         out *= res
         out *= "call $subroutineName $args_num\n"
-        out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
+        # out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
         eatToken(lines) # )    
 
 
@@ -340,7 +368,14 @@ function compileTerm(lines)
            out *= writePush("CONST",split(lines[1])[2])
         elseif split(lines[1])[1] == "<identifier>"
             id = split(lines[1])[2]
-            out *= writePush(subRoutineTable[id][2], subRoutineTable[id][3])  
+            out *= writePush(subRoutineTable[id][2], subRoutineTable[id][3])
+        elseif split(lines[1])[1] == "<keyword>" 
+            if split(lines[1])[2] == "true"
+                out *= writePush("CONST", 0)
+                out *= writeArihtmetic("not")
+            elseif split(lines[1])[2] == "false"
+                out *= writePush("CONST", 0)
+            end  
         end  
         eatToken(lines) # integerConstant | stringConstant | keywordConstant | varName
     end
@@ -380,7 +415,7 @@ function main()
             lines =  readlines("$directory\\$file")
             f = open("$directory\\$fileName.vm", "w")
             write(f, compileClass(lines))
-            print("Successfuly created file $fileName.xml\n")
+            print("Successfuly created file $fileName.vm\n")
             close(f)
         end
     end
