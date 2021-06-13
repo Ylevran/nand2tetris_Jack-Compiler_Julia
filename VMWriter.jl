@@ -1,4 +1,4 @@
-seg_dic = Dict("CONST" => "constant", "ARG" => "argument", "LOCAL" => "local", "STATIC" => "static", "THIS" => "this", "THAT" => "that", "POINTER" => "pointer", "TEMP" => "temp" )
+seg_dic = Dict("CONST" => "constant", "ARG" => "argument", "LOCAL" => "local", "STATIC" => "static", "FIELD" => "this", "THAT" => "that", "POINTER" => "pointer", "TEMP" => "temp" )
 
 function writePush(segment, index)
     return "push " * seg_dic[segment] * " $index\n"

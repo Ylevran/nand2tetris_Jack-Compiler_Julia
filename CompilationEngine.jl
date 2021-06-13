@@ -34,6 +34,8 @@ end
 function compileClass(lines)
     out = ""
 
+    global labelIndex = 1
+
     global countClassDic = createCountDic("static", "field")
     lines = lines[2:length(lines) - 1]
 
@@ -45,7 +47,7 @@ function compileClass(lines)
     global classTable = classVarSymbolTable(lines, Dict(), countClassDic)
 
     while split(lines[1])[2] in ClassVarDecFirst
-        out *= compileClassVarDec(lines) 
+        compileClassVarDec(lines) 
     end
 
     while split(lines[1])[2] in SubroutineDecFirst
@@ -79,11 +81,24 @@ function compileSubroutineDec(lines)
     global subRoutineTable = generateSubroutines(lines, countSubDic, currentClassName, Dict())    
     out = ""
 
+    temp = split(lines[1])[2] 
     eatToken(lines) # constructor|function|method
     eatToken(lines) # void|type
     out *= "function $currentClassName." * split(lines[1])[2] * " " * string(countSubDic["var"]) * "\n"
     eatToken(lines) # subroutineName
     eatToken(lines) # (
+
+    if temp == "constructor"
+        out *= writePush("CONST", countClassDic["field"])
+        out *= writeCall("Memory.alloc", 1)
+        out *= writePop("POINTER", 0)
+    elseif temp == "method"
+        out *= writePush("ARG", 0)
+        out *= writePop("POINTER", 0)
+    end
+
+    
+
     compileParameterList(lines)
     eatToken(lines) # )
     out *= compileSubroutineBody(lines)
@@ -174,7 +189,11 @@ function compileLet(lines)
 
     eatToken(lines) # =
     out *= compileExpression(lines)
-    out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
+    if haskey(subRoutineTable, varName)
+        out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
+    elseif haskey(classTable, varName)
+        out *= writePop(classTable[varName][2], classTable[varName][3])
+    end
     eatToken(lines) # ;
 
     return out
@@ -232,25 +251,39 @@ end
 function compileDo(lines)
     out = ""
     subroutineName = ""
-    args_num = 0
+    argsNum = 0
+    thisArg = 0
 
     eatToken(lines) # do
 
     if split(lines[2])[2] == "."
-        subroutineName = split(lines[1])[2] * "." * split(lines[3])[2] 
+        if haskey(classTable, split(lines[1])[2])
+            subroutineName = classTable[split(lines[1])[2]][1] * "." * split(lines[3])[2]
+            out *= writePush("FIELD", classTable[split(lines[1])[2]][3])
+            thisArg = 1
+        elseif haskey(subRoutineTable, split(lines[1])[2])
+            subroutineName = subRoutineTable[split(lines[1])[2]][1] * "." * split(lines[3])[2]
+            out *= writePush(subRoutineTable[split(lines[1])[2]][2], subRoutineTable[split(lines[1])[2]][3])
+            thisArg = 1
+        else
+            subroutineName = split(lines[1])[2] * "." * split(lines[3])[2]
+        end         
         eatToken(lines) # className | varName
         eatToken(lines) # .
         eatToken(lines) # subroutineName 
         
     else
-        subroutineName = split(lines[1])[2]
+        subroutineName = currentClassName * "." * split(lines[1])[2]
+        out *= writePush("POINTER", 0)
+        thisArg = 1
         eatToken(lines) # subroutineName
     end
 
     eatToken(lines) # (
-    res, args_num = compileExpressionList(lines, args_num)
+    res, argsNum = compileExpressionList(lines, argsNum)
+    argsNum += thisArg
     out *= res
-    out *= "call $subroutineName $args_num\n"
+    out *= "call $subroutineName $argsNum\n"
     out *= writePop("TEMP", 0)
     eatToken(lines) # )
     eatToken(lines) # ;
@@ -343,21 +376,37 @@ function compileTerm(lines)
     # subroutineCall case
     elseif split(lines[2])[2] == "." || split(lines[2])[2] == "("
         subroutineName = ""
-        args_num = 0
+        argsNum = 0
+        thisArg = 0
+
         if split(lines[2])[2] == "."
-            subroutineName = split(lines[1])[2] * "." * split(lines[3])[2]
+            if haskey(classTable, split(lines[1])[2])
+                subroutineName = classTable[split(lines[1])[2]][1] * "." * split(lines[3])[2]
+                out *= writePush("FIELD", classTable[split(lines[1])[2]][3])
+                thisArg = 1
+            elseif haskey(subRoutineTable, split(lines[1])[2])
+                subroutineName = subRoutineTable[split(lines[1])[2]][1] * "." * split(lines[3])[2]
+                out *= writePush(subRoutineTable[split(lines[1])[2]][2], subRoutineTable[split(lines[1])[2]][3])
+                thisArg = 1
+            else
+                subroutineName = split(lines[1])[2] * "." * split(lines[3])[2]
+            end         
             eatToken(lines) # className | varName
             eatToken(lines) # .
             eatToken(lines) # subroutineName 
+            
         else
-            subroutineName = split(lines[1])[2]
+            subroutineName = currentClassName * "." * split(lines[1])[2]
+            out *= writePush("POINTER", 0)
+            thisArg = 1
             eatToken(lines) # subroutineName
         end
     
         eatToken(lines) # (        
-        res, args_num = compileExpressionList(lines, args_num)
+        res, argsNum = compileExpressionList(lines, argsNum)
+        argsNum += thisArg
         out *= res
-        out *= "call $subroutineName $args_num\n"
+        out *= "call $subroutineName $argsNum\n"
         # out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
         eatToken(lines) # )    
 
@@ -368,13 +417,19 @@ function compileTerm(lines)
            out *= writePush("CONST",split(lines[1])[2])
         elseif split(lines[1])[1] == "<identifier>"
             id = split(lines[1])[2]
-            out *= writePush(subRoutineTable[id][2], subRoutineTable[id][3])
+            if haskey(subRoutineTable, id)
+                out *= writePush(subRoutineTable[id][2], subRoutineTable[id][3])
+            elseif haskey(classTable, id)
+                out *= writePush(classTable[id][2], classTable[id][3])
+            end
         elseif split(lines[1])[1] == "<keyword>" 
             if split(lines[1])[2] == "true"
                 out *= writePush("CONST", 0)
                 out *= writeArihtmetic("not")
             elseif split(lines[1])[2] == "false"
                 out *= writePush("CONST", 0)
+            elseif split(lines[1])[2] == "this"
+                out *= writePush("POINTER", 0)
             end  
         end  
         eatToken(lines) # integerConstant | stringConstant | keywordConstant | varName
@@ -383,30 +438,26 @@ function compileTerm(lines)
     return out
 end
 
-function compileExpressionList(lines, args_num) 
+function compileExpressionList(lines, argsNum) 
     out = "" 
 
     if split(lines[1])[2] != ")"
         out *= compileExpression(lines)
-        args_num += 1
+        argsNum += 1
 
         while split(lines[1])[2] == ","
             eatToken(lines) # ,
             out *= compileExpression(lines)
-            args_num += 1
+            argsNum += 1
         end
     end    
 
-    return out, args_num
+    return out, argsNum
 end
 
 function main()
     # directory = ARGS[1]
-    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\ConvertToBin"
-
-    # ClassSymbolTable = createCountDic("argument", "var")
-    # SubRoutineSymboleTable = createCountDic("static", "field")
-    
+    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Square"    
     files = readdir(directory)
 
     for file in files
