@@ -183,20 +183,41 @@ function compileLet(lines)
     
     if split(lines[1])[2] == "["
         eatToken(lines) # [
+        if haskey(subRoutineTable, varName)
+            out *= writePush(subRoutineTable[varName][2], subRoutineTable[varName][3])
+        elseif haskey(classTable, varName)
+            out *= writePush(classTable[varName][2], classTable[varName][3])
+        end
         out *= compileExpression(lines)
+        out *= writeArihtmetic("add")
         eatToken(lines) # ]
-    end
+        eatToken(lines) # =
+        out *= compileExpression(lines)
+        out *= writePop("TEMP", 0)
+        out *= writePop("POINTER", 1)
+        out *= writePush("TEMP", 0)
+        out *= writePop("THAT", 0)
+        if split(lines[1])[2] == ")"
+            eatToken(lines) # )
+        end
+        eatToken(lines) # ;
+        return out
 
-    eatToken(lines) # =
-    out *= compileExpression(lines)
-    if haskey(subRoutineTable, varName)
-        out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
-    elseif haskey(classTable, varName)
-        out *= writePop(classTable[varName][2], classTable[varName][3])
+    else
+        eatToken(lines) # =
+        out *= compileExpression(lines)
+        if haskey(subRoutineTable, varName)
+            out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
+        elseif haskey(classTable, varName)
+            out *= writePop(classTable[varName][2], classTable[varName][3])
+        end
+        if split(lines[1])[2] == ")"
+            eatToken(lines) # )
+        end
+        eatToken(lines) # ;
+    
+        return out
     end
-    eatToken(lines) # ;
-
-    return out
 end
 
 function compileIf(lines)
@@ -326,7 +347,7 @@ function compileExpression(lines)
         elseif op == "*"
             out *= writeCall("Math.multiply", 2)
 
-        elseif op == "\\"
+        elseif op == "/"
             out *= writeCall("Math.divide", 2)
 
         elseif op == "&gt;"
@@ -351,10 +372,18 @@ function compileTerm(lines)
 
     # array case
     if split(lines[2])[2] == "["
+        if haskey(classTable, split(lines[1])[2])
+            out *= writePush(classTable[split(lines[1])[2]][2], classTable[split(lines[1])[2]][3])
+        elseif haskey(subRoutineTable, split(lines[1])[2])
+            out *= writePush(subRoutineTable[split(lines[1])[2]][2], subRoutineTable[split(lines[1])[2]][3])
+        end
         eatToken(lines) # varName
         eatToken(lines) # [
         out *= compileExpression(lines)
-        eatToken(lines) # ]     
+        out *= writeArihtmetic("add")
+        eatToken(lines) # ] 
+        out *= writePop("POINTER", 1)
+        out *= writePush("THAT", 0)    
 
     # expression case
     elseif split(lines[1])[2] == "("
@@ -407,32 +436,42 @@ function compileTerm(lines)
         argsNum += thisArg
         out *= res
         out *= "call $subroutineName $argsNum\n"
-        # out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3])
-        eatToken(lines) # )    
+        # out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3]) 
+
+    elseif split(lines[1])[1] == "<integerConstant>"
+        out *= writePush("CONST",split(lines[1])[2])
+        eatToken(lines) # integerConstant
+
+    elseif split(lines[1])[1] == "<identifier>"
+        id = split(lines[1])[2]
+        if haskey(subRoutineTable, id)
+            out *= writePush(subRoutineTable[id][2], subRoutineTable[id][3])
+        elseif haskey(classTable, id)
+            out *= writePush(classTable[id][2], classTable[id][3])
+        end
+        eatToken(lines) # indentifier
+    
+    elseif split(lines[1])[1] == "<stringConstant>"
+        str = SubString(lines[1], 18, length(lines[1]) - 18)
+        out *= writePush("CONST", length(str))
+        out *= writeCall("String.new", 1)
+        for c in str
+            out *= writePush("CONST", Int(c))
+            out *= writeCall("String.appendChar", 2)            
+        end
+        eatToken(lines) # StringConstant
 
 
-
-    else
-        if split(lines[1])[1] == "<integerConstant>"
-           out *= writePush("CONST",split(lines[1])[2])
-        elseif split(lines[1])[1] == "<identifier>"
-            id = split(lines[1])[2]
-            if haskey(subRoutineTable, id)
-                out *= writePush(subRoutineTable[id][2], subRoutineTable[id][3])
-            elseif haskey(classTable, id)
-                out *= writePush(classTable[id][2], classTable[id][3])
-            end
-        elseif split(lines[1])[1] == "<keyword>" 
-            if split(lines[1])[2] == "true"
-                out *= writePush("CONST", 0)
-                out *= writeArihtmetic("not")
-            elseif split(lines[1])[2] == "false"
-                out *= writePush("CONST", 0)
-            elseif split(lines[1])[2] == "this"
-                out *= writePush("POINTER", 0)
-            end  
-        end  
-        eatToken(lines) # integerConstant | stringConstant | keywordConstant | varName
+    elseif split(lines[1])[1] == "<keyword>" 
+        if split(lines[1])[2] == "true"
+            out *= writePush("CONST", 0)
+            out *= writeArihtmetic("not")
+        elseif split(lines[1])[2] == "false"
+            out *= writePush("CONST", 0)
+        elseif split(lines[1])[2] == "this"
+            out *= writePush("POINTER", 0)
+        end            
+        eatToken(lines) # keywordConstant
     end
 
     return out
@@ -457,7 +496,7 @@ end
 
 function main()
     # directory = ARGS[1]
-    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Square"    
+    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Average"    
     files = readdir(directory)
 
     for file in files
