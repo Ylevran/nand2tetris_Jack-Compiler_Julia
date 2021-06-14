@@ -433,6 +433,7 @@ function compileTerm(lines)
     
         eatToken(lines) # (        
         res, argsNum = compileExpressionList(lines, argsNum)
+        eatToken(lines) # )
         argsNum += thisArg
         out *= res
         out *= "call $subroutineName $argsNum\n"
@@ -470,6 +471,8 @@ function compileTerm(lines)
             out *= writePush("CONST", 0)
         elseif split(lines[1])[2] == "this"
             out *= writePush("POINTER", 0)
+        elseif split(lines[1])[2] == "null"
+            out *= writePush("CONST", 0)
         end            
         eatToken(lines) # keywordConstant
     end
@@ -495,8 +498,8 @@ function compileExpressionList(lines, argsNum)
 end
 
 function main()
-    # directory = ARGS[1]
-    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Pong"    
+    directory = ARGS[1]
+    #directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Pong"    
     files = readdir(directory)
 
     for file in files
