@@ -496,7 +496,7 @@ end
 
 function main()
     # directory = ARGS[1]
-    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Average"    
+    directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Pong"    
     files = readdir(directory)
 
     for file in files

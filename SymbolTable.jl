@@ -1,6 +1,6 @@
 # dictionary to convert segments to to vm
 segDic = Dict("argument" => "ARG", "var" => "LOCAL", "static" => "STATIC","field" => "FIELD")
-noLocal = ["let", "do", "if", "while"]
+noLocal = ["let", "do", "if", "while", "return"]
 
 # function that get a line in xml and return the word in it
 function extractToken(line)

@@ -139,7 +139,7 @@ function generateTokenizer(line)
         
     # running on every place in the list
     for word in splitLine
-        if checkGlueSymbols(word) == false && word != ""
+        if checkGlueSymbols(word) == false && word != "" && word != "\t"
             id, printing = identify(word)
            token *= printIdentify(id, printing)
         elseif word != "" # if we have a glue words
