@@ -437,7 +437,6 @@ function compileTerm(lines)
         argsNum += thisArg
         out *= res
         out *= "call $subroutineName $argsNum\n"
-        # out *= writePop(subRoutineTable[varName][2], subRoutineTable[varName][3]) 
 
     elseif split(lines[1])[1] == "<integerConstant>"
         out *= writePush("CONST",split(lines[1])[2])
@@ -499,7 +498,7 @@ end
 
 function main()
     directory = ARGS[1]
-    #directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\Pong"    
+    # directory = "C:\\Users\\Yossef\\Desktop\\nand2tetris\\projects\\11\\CircleSnake"    
     files = readdir(directory)
 
     for file in files

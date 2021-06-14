@@ -10,7 +10,8 @@ function findQuotsPlace(line)
     places = []
     range = 1:length(line)
     for i in range
-        if line[i] == '\"'
+        chr = line[i]
+        if chr == '\"'
             append!(places, i)
         end
     end
@@ -138,31 +139,50 @@ function generateTokenizer(line)
     
         
     # running on every place in the list
+    id = ""
+    printing = ""
     for word in splitLine
         if checkGlueSymbols(word) == false && word != "" && word != "\t"
             id, printing = identify(word)
            token *= printIdentify(id, printing)
         elseif word != "" # if we have a glue words
+             id, printing  = identify(word)
+            if id == "stringConstant"
+                token *=  printIdentify(id, printing)
+            else
            newLine = separate(word)
-           splitLine = split(newLine)
-          for word in splitLine
-            id, printing = identify(word)
+             newsplitLine = split(newLine)
+             for chr in newsplitLine
+             id, printing = identify(chr)
           token *=  printIdentify(id, printing)
           end                    
         end
+    end
     end
     return token
 
 end
 
+# a function to check if a comment in a line
+function findComment(line)
+    count = 0
+    for i in line
+        if i != "/*" || i != "//"
+            count += 1
+        end
+    end
+    return count # if count stays 0 it means that the comment in the start of the line
+end
+
 # this function checks if a line is a comment
 function isComment(line)
+    spliting = split(line)
 if line[1] == '/' || line[1] == '*' # the line starts with the comment
     return true
 elseif line[1] == ' ' # the line didn't start with the comment
     splitLine = split(line)
     return isComment(join(splitLine))
-elseif "/*" in split(line) || "//" in split(line)
+elseif ("/*" in spliting || "//" in spliting) && findComment(spliting) == 0
     return true
 end
 return false
