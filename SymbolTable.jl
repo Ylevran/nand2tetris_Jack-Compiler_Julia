@@ -15,7 +15,7 @@ function extractToken(line)
     return join(tokens, " ") # if it a string
 end
 
-# a function that gets a line and find the and of it
+# a function that gets a line and find the end of it
 function findAndLine(lines)
     lineDec = []
     for line in lines
