@@ -230,7 +230,7 @@ function createCountDic(keyWord1, keyWord2)
     name = ""
     type = ""
     count = 1
-    kind = "argument"
+    kind = "argument"   
     type = extractToken(args[1])
     name = extractToken( args[2])
     count = CountDictionary[kind]
