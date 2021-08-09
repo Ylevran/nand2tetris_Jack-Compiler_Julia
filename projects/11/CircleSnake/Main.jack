@@ -1,0 +1,137 @@
+// Initializes a new Square Dance game and starts running it. Authors: Maor Sarusi & Yossef Levran
+class Main {
+    
+	// This function implements the first screen with credits and roles
+	function void openingScreen(){
+	    var int iCursor;
+		var int jCursor;
+		var int key;
+		
+        let iCursor = 7;
+        let jCursor = 15;
+        let key = 0;
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("Welcome to Circle Snake");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("By Yossef Levran & Maor Sarusi");
+		
+        do Output.moveCursor(iCursor, jCursor);            // get down one line without writing
+        let iCursor = iCursor + 1;
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("Roles:");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("eat the rectangles");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("be careful from the boundries");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("for every rectangle you get 100 points");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("it maybe a delay appearance of the rectangle");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("you also can get out by pressing escape");
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+		
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        do Output.printString("Press any key to continue");
+		
+		 
+         // waits for a key to be pressed
+         while (key = 0)
+		 {
+            let key = Keyboard.keyPressed();
+         }
+            do Screen.clearScreen();
+            do Sys.wait(5);
+	
+    return;
+	}
+	
+    function void main() {
+        var int iCursor;
+        var int jCursor;
+        var CircleGame game;
+        var Array countArr;
+        var int  score;
+
+        do Main.openingScreen();
+
+        let countArr = Array.new(6);
+        let game = CircleGame.new();
+        let countArr =  game.run();
+		
+        let iCursor = 7;
+        let jCursor = 20;
+        do Screen.clearScreen();
+        do Output.moveCursor(iCursor, jCursor);
+        let iCursor = iCursor + 1;
+        if (countArr[0] = -1){
+         do Output.printString("Game Over!!!");
+         do Output.println();
+        }
+         else{
+         do Output.printString("you choose to exit!");
+         do Output.println();
+        }
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Presses statistics:");
+         do Output.println();
+		 
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Up: ");
+         do Output.printInt(countArr[1]);
+         do Output.println();
+		 
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Down: ");
+         do Output.printInt(countArr[2]);
+         do Output.println();
+		 
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Left: ");
+         do Output.printInt(countArr[3]);
+         do Output.println();
+		 
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Right: ");
+         do Output.printInt(countArr[4]);
+		 
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Eat rectangles: ");
+         do Output.printInt(countArr[5]);
+		 
+         let score = (countArr[5] * 100); 
+         do Output.moveCursor(iCursor, jCursor);
+         let iCursor = iCursor + 1;
+         do Output.printString("Final score: ");
+         do Output.printInt(score);
+		 
+         do game.dispose();
+         do countArr.dispose();
+         return;
+      }
+}

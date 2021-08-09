@@ -1,0 +1,553 @@
+function CircleGame.new 0
+push constant 7
+call Memory.alloc 1
+pop pointer 0
+push constant 50
+push constant 50
+push constant 12
+call Circle.new 3
+pop this 0
+push constant 0
+pop this 1
+push constant 50
+call Random.new 1
+pop this 6
+push this 6
+push constant 500
+call Random.randRange 2
+pop this 3
+push this 6
+push constant 242
+call Random.randRange 2
+pop this 4
+push this 3
+push this 4
+call Shrink.new 2
+pop this 2
+push pointer 0
+return
+function CircleGame.eatShrink 0
+push argument 0
+pop pointer 0
+push pointer 0
+push this 2
+call Shrink.get_X 1
+push this 2
+call Shrink.get_Y 1
+call CircleGame.isInCircle 3
+not
+if-goto IF_FALSE1
+push constant 0
+not
+return
+goto IF_TRUE1
+label IF_FALSE1
+label IF_TRUE1
+push pointer 0
+push this 2
+call Shrink.get_X 1
+push constant 10
+add
+push this 2
+call Shrink.get_Y 1
+call CircleGame.isInCircle 3
+not
+if-goto IF_FALSE2
+push constant 0
+not
+return
+goto IF_TRUE2
+label IF_FALSE2
+label IF_TRUE2
+push pointer 0
+push this 2
+call Shrink.get_X 1
+push this 2
+call Shrink.get_Y 1
+push constant 10
+add
+call CircleGame.isInCircle 3
+not
+if-goto IF_FALSE3
+push constant 0
+not
+return
+goto IF_TRUE3
+label IF_FALSE3
+label IF_TRUE3
+push pointer 0
+push this 2
+call Shrink.get_X 1
+push constant 10
+add
+push this 2
+call Shrink.get_Y 1
+push constant 10
+add
+call CircleGame.isInCircle 3
+not
+if-goto IF_FALSE4
+push constant 0
+not
+return
+goto IF_TRUE4
+label IF_FALSE4
+label IF_TRUE4
+push constant 0
+return
+function CircleGame.isInCircle 5
+push argument 0
+pop pointer 0
+push argument 1
+push this 0
+call Circle.get_X 1
+sub
+pop local 0
+push argument 2
+push this 0
+call Circle.get_Y 1
+sub
+pop local 1
+push this 0
+call Circle.get_radius 1
+pop local 2
+push local 0
+push local 0
+call Math.multiply 2
+push local 1
+push local 1
+call Math.multiply 2
+add
+pop local 3
+push local 2
+push local 2
+call Math.multiply 2
+pop local 4
+push local 3
+push local 4
+gt
+not
+not
+if-goto IF_FALSE5
+push constant 0
+not
+return
+goto IF_TRUE5
+label IF_FALSE5
+label IF_TRUE5
+push constant 0
+return
+function CircleGame.dispose 0
+push argument 0
+pop pointer 0
+push this 0
+call Circle.dispose 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function CircleGame.movecircle 0
+push argument 0
+pop pointer 0
+push this 1
+push constant 1
+eq
+not
+if-goto IF_FALSE6
+push this 0
+call Circle.moveUp 1
+pop temp 0
+goto IF_TRUE6
+label IF_FALSE6
+label IF_TRUE6
+push this 1
+push constant 2
+eq
+not
+if-goto IF_FALSE7
+push this 0
+call Circle.moveDown 1
+pop temp 0
+goto IF_TRUE7
+label IF_FALSE7
+label IF_TRUE7
+push this 1
+push constant 3
+eq
+not
+if-goto IF_FALSE8
+push this 0
+call Circle.moveLeft 1
+pop temp 0
+goto IF_TRUE8
+label IF_FALSE8
+label IF_TRUE8
+push this 1
+push constant 4
+eq
+not
+if-goto IF_FALSE9
+push this 0
+call Circle.moveRight 1
+pop temp 0
+goto IF_TRUE9
+label IF_FALSE9
+label IF_TRUE9
+push constant 12
+call Sys.wait 1
+pop temp 0
+push constant 0
+return
+function CircleGame.afterEat 8
+push argument 0
+pop pointer 0
+push this 0
+call Circle.incSize 1
+pop temp 0
+push this 2
+call Shrink.erase 1
+pop temp 0
+push this 0
+call Circle.get_X 1
+pop local 0
+push this 0
+call Circle.get_Y 1
+pop local 1
+push this 0
+call Circle.get_radius 1
+pop local 2
+push local 0
+push local 1
+push local 2
+call Circle.new 3
+pop this 0
+push this 0
+call Circle.get_X 1
+push constant 200
+lt
+not
+if-goto IF_FALSE10
+push this 0
+call Circle.get_X 1
+push constant 50
+sub
+pop local 4
+goto IF_TRUE10
+label IF_FALSE10
+push constant 100
+pop local 4
+label IF_TRUE10
+push this 0
+call Circle.get_X 1
+push constant 310
+gt
+not
+if-goto IF_FALSE11
+push constant 510
+push this 0
+call Circle.get_X 1
+sub
+push constant 50
+sub
+pop local 5
+goto IF_TRUE11
+label IF_FALSE11
+push constant 100
+pop local 5
+label IF_TRUE11
+push this 0
+call Circle.get_Y 1
+push constant 100
+lt
+not
+if-goto IF_FALSE12
+push this 0
+call Circle.get_Y 1
+push constant 25
+sub
+pop local 6
+goto IF_TRUE12
+label IF_FALSE12
+push constant 100
+pop local 6
+label IF_TRUE12
+push this 0
+call Circle.get_Y 1
+push constant 154
+gt
+not
+if-goto IF_FALSE13
+push constant 254
+push this 0
+call Circle.get_Y 1
+sub
+push constant 25
+sub
+pop local 7
+goto IF_TRUE13
+label IF_FALSE13
+push constant 100
+pop local 7
+label IF_TRUE13
+push this 6
+push constant 1
+call Random.randRange 2
+pop local 3
+push local 3
+push constant 0
+eq
+not
+if-goto IF_FALSE14
+push this 0
+call Circle.get_X 1
+push this 6
+push local 5
+call Random.randRange 2
+add
+pop this 3
+goto IF_TRUE14
+label IF_FALSE14
+push this 0
+call Circle.get_X 1
+push this 6
+push local 4
+call Random.randRange 2
+sub
+pop this 3
+label IF_TRUE14
+push this 6
+push constant 1
+call Random.randRange 2
+pop local 3
+push local 3
+push constant 0
+eq
+not
+if-goto IF_FALSE15
+push this 0
+call Circle.get_Y 1
+push this 6
+push local 7
+call Random.randRange 2
+add
+pop this 4
+goto IF_TRUE15
+label IF_FALSE15
+push this 0
+call Circle.get_Y 1
+push this 6
+push local 6
+call Random.randRange 2
+sub
+pop this 4
+label IF_TRUE15
+push this 3
+push this 4
+call Shrink.new 2
+pop this 2
+push constant 0
+return
+function CircleGame.run 8
+push argument 0
+pop pointer 0
+push constant 0
+pop local 2
+push constant 0
+pop local 3
+push constant 0
+pop local 4
+push constant 0
+pop local 5
+push constant 0
+pop local 6
+push constant 0
+pop local 1
+push constant 6
+call Array.new 1
+pop local 7
+push local 7
+push constant 0
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label WHILE_EXP16
+push local 1
+not
+not
+if-goto WHILE_END16
+label WHILE_EXP17
+push local 0
+push constant 0
+eq
+not
+if-goto WHILE_END17
+call Keyboard.keyPressed 0
+pop local 0
+push pointer 0
+call CircleGame.movecircle 1
+pop temp 0
+goto WHILE_EXP17
+label WHILE_END17
+push this 0
+call Circle.checkBoundries 1
+not
+if-goto IF_FALSE18
+push local 0
+push constant 140
+eq
+not
+if-goto IF_FALSE19
+push constant 0
+not
+pop local 1
+goto IF_TRUE19
+label IF_FALSE19
+label IF_TRUE19
+push local 0
+push constant 131
+eq
+not
+if-goto IF_FALSE20
+push constant 1
+pop this 1
+push local 2
+push constant 1
+add
+pop local 2
+goto IF_TRUE20
+label IF_FALSE20
+label IF_TRUE20
+push local 0
+push constant 133
+eq
+not
+if-goto IF_FALSE21
+push constant 2
+pop this 1
+push local 3
+push constant 1
+add
+pop local 3
+goto IF_TRUE21
+label IF_FALSE21
+label IF_TRUE21
+push local 0
+push constant 130
+eq
+not
+if-goto IF_FALSE22
+push constant 3
+pop this 1
+push local 4
+push constant 1
+add
+pop local 4
+goto IF_TRUE22
+label IF_FALSE22
+label IF_TRUE22
+push local 0
+push constant 132
+eq
+not
+if-goto IF_FALSE23
+push constant 4
+pop this 1
+push local 5
+push constant 1
+add
+pop local 5
+goto IF_TRUE23
+label IF_FALSE23
+label IF_TRUE23
+goto IF_TRUE18
+label IF_FALSE18
+push local 7
+push constant 0
+add
+push constant 1
+neg
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+not
+pop local 1
+label IF_TRUE18
+label WHILE_EXP24
+push local 0
+push constant 0
+eq
+not
+not
+if-goto WHILE_END24
+call Keyboard.keyPressed 0
+pop local 0
+push pointer 0
+call CircleGame.movecircle 1
+pop temp 0
+push pointer 0
+call CircleGame.eatShrink 1
+not
+if-goto IF_FALSE25
+push pointer 0
+call CircleGame.afterEat 1
+pop temp 0
+push local 6
+push constant 1
+add
+pop local 6
+goto IF_TRUE25
+label IF_FALSE25
+label IF_TRUE25
+goto WHILE_EXP24
+label WHILE_END24
+goto WHILE_EXP16
+label WHILE_END16
+push local 7
+push constant 1
+add
+push local 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 7
+push constant 2
+add
+push local 3
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 7
+push constant 3
+add
+push local 4
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 7
+push constant 4
+add
+push local 5
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 7
+push constant 5
+add
+push local 6
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 7
+return
