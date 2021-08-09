@@ -1,0 +1,39 @@
+class Shrink {
+	field int x, y;
+	
+	/** Constructs a new shrink with a given x and y. */
+   constructor Shrink new(int Ax, int Ay) {
+      let x = Ax;
+      let y = Ay;
+      do draw();
+      return this;
+   }
+   
+	method int get_X(){
+		return x;
+   }
+   
+    method int get_Y(){
+		return y;
+   }
+   
+   /** Disposes this Shrink. */
+   method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Draws the Shrink on the screen. */
+   method void draw() {
+      do Screen.setColor(true);
+      do Screen.drawRectangle(x, y, x + 10, y + 10);
+      return;
+   }
+
+   /** Erases the Shrink from the screen. */
+   method void erase() {
+      do Screen.setColor(false);
+	  do Screen.drawRectangle(x, y, x + 10, y + 10);
+      return;
+   }
+}

@@ -1,0 +1,180 @@
+/**
+ * Implements the circle Dance game.
+ * This simple game allows the user to move a black circle around
+ * the screen
+ * When the game starts, a circle is shown at the
+ * top-left corner of the screen. The user controls the circle as follows.
+ * The 4 arrow keys are used to move the circle up, down, left, and right.
+ * the circle's size. The 'esc' key is used to quit the game.
+ */
+
+class CircleGame {
+   field Circle circle; // the circle of this game
+   field int direction; // the circle's current direction: 
+                        // 0=none, 1=up, 2=down, 3=left, 4=right
+	field Shrink shrink;
+	field int x;
+	field int y;
+	field int location;
+	field Random rand;
+	
+   /** Constructs a new circle Game. */
+   constructor CircleGame new() {
+      // Creates a 30 by 30 pixels circle and positions it at the top-left
+      // of the screen.
+      let circle = Circle.new(50, 50, 12);
+      let direction = 0;  // initial state is no movement
+	  let rand = Random.new(50);
+	  let x = rand.randRange(500);
+	  let y = rand.randRange(242);
+	  let shrink = Shrink.new(x,y);
+      return this;
+   }
+
+   /** Checks if the circle "eats" the rectangle */
+   	method boolean eatShrink(){
+		if (isInCircle(shrink.get_X(), shrink.get_Y())){return true;}		
+		if (isInCircle(shrink.get_X() + 10, shrink.get_Y())){return true;}		
+		if (isInCircle(shrink.get_X(), shrink.get_Y() + 10)){return true;}		
+		if (isInCircle(shrink.get_X() + 10, shrink.get_Y() + 10)){return true;}	
+		return false;
+	}
+	
+	/** A private method to help checking the eating operation */
+	// in prticular this method checks if if the circle "climbs" on the rectangle
+	method boolean isInCircle(int input_x, int input_y){
+		var int x_diff;
+		var int y_diff;
+		var int radius;
+		var int diff;
+		var int rad_pow;
+		
+		let x_diff = input_x - circle.get_X();
+		let y_diff = input_y - circle.get_Y();
+		let radius = circle.get_radius();
+		let diff = Math.multiply(x_diff, x_diff) + Math.multiply(y_diff, y_diff);
+		let rad_pow = Math.multiply(radius, radius);
+		
+		if (~(diff > rad_pow)) {return true;}
+		return false;
+	}
+	
+   /** Disposes this game. */
+   method void dispose() {
+      do circle.dispose();
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Moves the circle in the current direction. */
+   method void movecircle() {
+      if (direction = 1) { do circle.moveUp(); }
+      if (direction = 2) { do circle.moveDown(); }
+      if (direction = 3) { do circle.moveLeft(); }
+      if (direction = 4) { do circle.moveRight(); }
+      do Sys.wait(12);  // delays the next movement
+      return;
+   }
+ /** Implements the radius increasing and the new rectangle appearance */
+   method void afterEat(){
+	   var int  Cx;
+	   var int  Cy;
+	   var int  Cradius;
+	   var int flag;
+	   var int limit1;
+	   var int limit2;
+	   var int limit3;
+	   var int limit4;
+	   
+	   do circle.incSize();	   
+	   do shrink.erase();
+	   
+	   let Cx = circle.get_X();
+	   let Cy = circle.get_Y();
+	   let Cradius = circle.get_radius();
+	   
+	   
+	   let circle = Circle.new(Cx, Cy, Cradius);
+		
+		if(circle.get_X() < 200){let limit1 = circle.get_X() - 50;}
+		else {let limit1 = 100;}
+		if(circle.get_X() > 310){let limit2 = 510 - circle.get_X() - 50;}
+		else {let limit2 = 100;}
+		if(circle.get_Y() < 100){let limit3 = circle.get_Y() - 25;}
+		else {let limit3 = 100;}
+		if(circle.get_Y() > 154){let limit4 = 254 - circle.get_Y() - 25;}
+		else {let limit4 = 100;}
+
+	   // Random a number by the limits of boundries 
+	   let flag = rand.randRange(1);
+	   if(flag = 0) {let x = circle.get_X() + rand.randRange(limit2);}
+	   else {let x = circle.get_X() - rand.randRange(limit1);} 	
+	   let flag = rand.randRange(1);
+	   if(flag = 0) {let y = circle.get_Y() + rand.randRange(limit4);}
+	   else {let y = circle.get_Y() - rand.randRange(limit3);} 
+	   let shrink = Shrink.new(x, y);
+	   
+	   return;
+   }
+ 
+
+   /** Runs the game: handles the user's inputs and moves the circle accordingly */
+   method Array run() {
+      var char key;  // the key currently pressed by the user
+      var boolean exit;
+	  var int upCount;
+	  var int downCount;
+	  var int leftCount;
+	  var int rightCount;
+	  var int inlargeCount;
+	  var Array arr;
+	    
+	  let upCount = 0;
+	  let downCount = 0;
+	  let leftCount = 0;
+	  let rightCount = 0;
+	  let inlargeCount = 0;
+      let exit = false;
+	  let arr = Array.new(6);
+	  let arr[0] = 0;
+      
+      while (~exit) {
+         // waits for a key to be pressed
+         while (key = 0) {
+            let key = Keyboard.keyPressed();
+            do movecircle();
+         }
+		  if (circle.checkBoundries()){
+		     if (key = 140)  { let exit = true; }     // esc key
+             if (key = 131) { let direction = 1; let upCount = upCount + 1; }   // up arrow
+             if (key = 133) { let direction = 2; let downCount = downCount + 1; }   // down arrow
+             if (key = 130) { let direction = 3; let leftCount = leftCount + 1; }   // left arrow
+             if (key = 132) { let direction = 4; let rightCount = rightCount + 1;}   // right arrow     
+		  }
+         else
+		 {
+		 let arr[0] = -1;
+		 let exit = true;
+		 }
+			
+		
+         // waits for the key to be released
+         while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+            do movecircle();					
+			if (eatShrink()) {do afterEat(); let inlargeCount = inlargeCount + 1;}
+         }
+		 //do printInfo();
+     }	 // while
+	 	 let arr[1] = upCount;
+		 let arr[2] = downCount;
+		 let arr[3] = leftCount;
+		 let arr[4] = rightCount;
+		 let arr[5] = inlargeCount;
+		 
+     return arr;
+   }
+}
+
+
+

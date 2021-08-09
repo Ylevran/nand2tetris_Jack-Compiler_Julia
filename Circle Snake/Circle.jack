@@ -1,0 +1,145 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/09/Square/Square.jack
+
+/** Implements a graphical circle. */
+class Circle {
+
+   field int x, y; // screen location of the circle's center
+   field int radius; // radius of this circle
+
+   /** Constructs a new circle with a given location and radius. */
+   constructor Circle new(int Ax, int Ay, int Aradius) {
+      let x = Ax;
+      let y = Ay;
+      let radius = Aradius;
+      do draw();
+      return this;
+   }
+
+   /** Disposes this circle. */
+   method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }
+   
+   method int get_X(){
+		return x;
+   }
+   
+    method int get_Y(){
+		return y;
+   }
+   
+   method int get_radius(){
+		return radius;
+   }
+
+   /** Draws the circle on the screen. */
+   method void draw() {
+      do Screen.setColor(true);
+      do Screen.drawCircle(x, y, radius);
+      return;
+   }
+
+
+   /** Erases the circle from the screen. */
+   method void erase() {
+      do Screen.setColor(false);
+	  do Screen.drawCircle(x,y, radius);
+      return;
+   }
+    /** Check if the circle touched the edges of the screen */
+    method boolean checkBoundries(){
+	   var boolean flag;
+       let flag = true;
+	    if (~(y > radius)){let flag = false;}
+	   else{  
+	         if (y + radius = 252){let flag = false;}   
+		     else{
+		          if (x + radius = 510){let flag = false;}
+		          else{
+		                if (x = radius) {let flag = false;}
+			          }
+		         }
+	      
+	        }	
+		return flag;
+	}
+  /** Gets methods */
+  method int getRadius(){return radius;}
+  method int getX(){return x;}
+  method int getY(){return y;}
+
+    /** Increments the circle size by 2 pixels. */
+   method void incSize() {
+      if (y > radius)
+	  {
+	    if (~(y + radius > 252))     
+	     {
+	       if (x + radius < 510)
+            {
+              if (x > radius)
+	           {
+				  do erase();
+	              let radius = radius + 2;
+	              do draw();
+	            }
+			  }
+	        }
+	    }
+
+      return;
+    }
+
+   /** Decrements the circle size by 2 pixels. */
+   method void decSize() {
+      if (radius > 2) {
+         do erase();
+         let radius = radius - 2;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the circle up by 2 pixels. */
+   method void moveUp() {
+      if (y > radius) {
+         do erase();
+         let y = y - 2;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the circle down by 2 pixels. */
+   method void moveDown() {
+      if (~(y + radius >  250)) {
+         do erase();
+         let y = y + 2;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the circle left by 2 pixels. */
+   method void moveLeft() {
+      if (x > radius) {
+         do erase();
+         let x = x - 2;
+         do draw();
+      }
+      return;
+   }
+
+   /** Moves the circle right by 2 pixels. */
+   method void moveRight() {
+      if ((x + radius) < 510) {
+         do erase();
+         let x = x + 2;
+         do draw();
+      }
+      return;
+   }
+}
