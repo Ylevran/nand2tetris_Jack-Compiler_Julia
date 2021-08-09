@@ -4,6 +4,6 @@ This project contains:
 
 2) A Jack Compiler from jack files to vm files in Julia language.
 
-3) A Game in Jack lamguage: Circle Snake. 
+3) A Game in Jack language: Circle Snake. 
 
 All the project is based on the "nand2Tetris" course: https://www.coursera.org/learn/nand2tetris2
