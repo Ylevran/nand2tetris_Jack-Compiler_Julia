@@ -2,7 +2,7 @@ This project contains:
 
 1) A VM Translator from vm files to assembly in Julia language.
 
-2) A Jack Compiler from jack files to vm files in Julia language.
+2) A Jack Compiler from jack files to vm files in Julia language (with first version from jack to xml files).
 
 3) A Game in Jack language: Circle Snake. 
 
